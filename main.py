@@ -126,7 +126,7 @@ def three(update, context):
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text="Hubungi @syarifahmedart (Dokter Spesialis Lajnah) atau periksakan diri ke rumah sakit rujukan COVID-19 di daerah Anda",
+        text="Hubungi dokter atau periksakan diri ke rumah sakit rujukan COVID-19 di daerah Anda",
         reply_markup=reply_markup
     )
     # Transfer to conversation state `SECOND`
@@ -189,8 +189,7 @@ def end(update, context):
     """Returns `ConversationHandler.END`, which tells the
     ConversationHandler that the conversation is over"""
     query = update.callback_query
-    bot = context.bot    
-        #update.message.reply_text("Bot untuk mengecek kesehatan dan konsultasi dokter dari gejala infeksi virus COVID-19. Sesuai dengan petunjuk Kemenkes. Powered by AMMA. Support By MKAI.\n\n/start - Deteksi gejala infeksi COVID-19\n/info - Kabar terkini COVID-19 di Indonesia\n/help - Cara mencuci tangan")
+    bot = context.bot
     
     bot.edit_message_text(
         chat_id=query.message.chat_id,
@@ -208,8 +207,8 @@ def info(update, context):
     """Send a message when the command /help is issued."""
     
     r = requests.get('https://kawalcovid19.harippe.id/api/summary')
-    #print(r.json()['confirmed']['value'])
-    #{'confirmed': {'value': 1046}, 'recovered': {'value': 46}, 'deaths': {'value': 87}, 'activeCare': {'value': 913}, 'metadata': {'lastUpdatedAt': '2020-03-28T01:17:07+00:00'}, 'nationality': {}, 'cluster': {}, 'province': {}, 'gender': {}}
+    # print(r.json()['confirmed']['value'])
+    # {'confirmed': {'value': 1046}, 'recovered': {'value': 46}, 'deaths': {'value': 87}, 'activeCare': {'value': 913}, 'metadata': {'lastUpdatedAt': '2020-03-28T01:17:07+00:00'}, 'nationality': {}, 'cluster': {}, 'province': {}, 'gender': {}}
 
     confirmed = r.json()['confirmed']['value']
     recovered = r.json()['recovered']['value']

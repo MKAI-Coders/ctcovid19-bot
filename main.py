@@ -27,35 +27,39 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 # Stages
-FIRST, SECOND = range(2)
+NAMA, FIRST, SECOND = range(3)
 
 # Callback data
 ONE, TWO, THREE, FOUR, FIVE, SIX = range(6)
 
 def start(update, context):
+    update.message.reply_text("Hallo, saat ini anda berbicara dengan Clean The Covid-19 Bot. Dibuat oleh Komunitas Clean the City di support oleh beberapa dokter dari AMMA. Powered by MKA Indonesia.\n\nBerikut layanan yang dapat anda akses, tekan tombol dibawah ini:\n\n/deteksi - Deteksi gejala infeksi COVID-19\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia\n/cegah - Mencegah COVID-19")
+
+def deteksi(update, context):
     """Send message on `/start`."""
     # Get user that sent /start and log his name
     user = update.message.from_user
+    
     logger.info("User %s started the conversation.", user.first_name)
-    # Build InlineKeyboard where each button has a displayed text
-    # and a string as callback_data
-    # The keyboard is a list of button rows, where each row is in turn
-    # a list (hence `[[...]]`).
-    keyboard = [
-        [InlineKeyboardButton("Ya", callback_data=str(ONE)),
-         InlineKeyboardButton("Tidak", callback_data=str(TWO))]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    # Send message with text and appended InlineKeyboard
-    update.message.reply_text(
-        "Pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
-        reply_markup=reply_markup
-    )
-    # Tell ConversationHandler that we're in state `FIRST` now
-    return FIRST
+    update.message.reply_text("Silakan mengisi data terlebih dahulu.\nMasukkan nama anda")    
+    return NAMA
 
+# def deteksi_over(update, context):
+#     keyboard = [
+#         [InlineKeyboardButton("Ya", callback_data=str(ONE)),
+#          InlineKeyboardButton("Tidak", callback_data=str(TWO))]
+#     ]
+#     reply_markup = InlineKeyboardMarkup(keyboard)
+    
+#     # Send message with text and appended InlineKeyboard
+#     update.message.reply_text(
+#         "Apakah kamu pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
+#         reply_markup=reply_markup
+#     )
+#     # Tell ConversationHandler that we're in state `FIRST` now
+#     return FIRST
 
-def start_over(update, context):
+def deteksi_over(update, context):
     """Prompt same text & keyboard as `start` does but not as new message"""
     # Get CallbackQuery from Update
     query = update.callback_query
@@ -72,10 +76,74 @@ def start_over(update, context):
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text="Pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
+        text="Apakah kamu pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
         reply_markup=reply_markup
     )
     return FIRST
+
+def nama(update, context):
+    user = update.message.from_user
+    logger.info("Bio of %s: %s", user.first_name, update.message.text)
+    
+    keyboard = [
+        [InlineKeyboardButton("Ya", callback_data=str(ONE)),
+         InlineKeyboardButton("Tidak", callback_data=str(TWO))]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    # Send message with text and appended InlineKeyboard
+    update.message.reply_text(
+        "Apakah kamu pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
+        reply_markup=reply_markup
+    )
+    # Tell ConversationHandler that we're in state `FIRST` now
+    return FIRST
+
+# def one(update, context):
+#     """Send message on `/start`."""
+#     # Get user that sent /start and log his name
+#     # user = update.message.from_user
+#     # logger.info("User %s started the conversation.", user.first_name)
+    
+#     # Build InlineKeyboard where each button has a displayed text
+#     # and a string as callback_data
+#     # The keyboard is a list of button rows, where each row is in turn
+#     # a list (hence `[[...]]`).
+#     keyboard = [
+#         [InlineKeyboardButton("Ya", callback_data=str(ONE)),
+#          InlineKeyboardButton("Tidak", callback_data=str(TWO))]
+#     ]
+#     reply_markup = InlineKeyboardMarkup(keyboard)
+    
+#     # Send message with text and appended InlineKeyboard
+#     update.message.reply_text(
+#         "Apakah kamu pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
+#         reply_markup=reply_markup
+#     )
+#     # Tell ConversationHandler that we're in state `FIRST` now
+#     return FIRST
+
+# def deteksi_over(update, context):
+#     """Prompt same text & keyboard as `start` does but not as new message"""
+#     # Get CallbackQuery from Update
+#     query = update.callback_query
+#     # Get Bot from CallbackContext
+#     bot = context.bot
+#     keyboard = [
+#         [InlineKeyboardButton("Ya", callback_data=str(ONE)),
+#          InlineKeyboardButton("Tidak", callback_data=str(TWO))]
+#     ]
+#     reply_markup = InlineKeyboardMarkup(keyboard)
+#     # Instead of sending a new message, edit the message that
+#     # originated the CallbackQuery. This gives the feeling of an
+#     # interactive menu.
+#     bot.edit_message_text(
+#         chat_id=query.message.chat_id,
+#         message_id=query.message.message_id,
+#         text="Pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
+#         reply_markup=reply_markup
+#     )
+#     return FIRST
 
 # Kalo Ya
 def one(update, context):
@@ -191,10 +259,12 @@ def end(update, context):
     query = update.callback_query
     bot = context.bot
     
+    user_name = query.message.chat.first_name
+    #update.message.from_user  'username': 'spdin', 'first_name': 'Saripudin'
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text="Semoga Anda dan Keluarga selalu sehat dan terlindung dari wabah COVID-19. Aamiin\n\n\nBot untuk mengecek kesehatan dan konsultasi dokter dari gejala infeksi virus COVID-19. Sesuai dengan petunjuk Kemenkes. Powered by AMMA. Support By MKAI.\n\n/start - Deteksi gejala infeksi COVID-19\n/info - Kabar terkini COVID-19 di Indonesia\n/help - Cara mencuci tangan"
+        text="Semoga {} dan keluarga selalu sehat dan terlindung dari wabah COVID-19. Aamiin".format(user_name)
     )
     
     return ConversationHandler.END
@@ -204,28 +274,36 @@ def error(update, context):
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 def info(update, context):
-    """Send a message when the command /help is issued."""
+
+    r = requests.get('https://api.kawalcorona.com/indonesia/')
     
-    r = requests.get('https://kawalcovid19.harippe.id/api/summary')
-    # print(r.json()['confirmed']['value'])
-    # {'confirmed': {'value': 1046}, 'recovered': {'value': 46}, 'deaths': {'value': 87}, 'activeCare': {'value': 913}, 'metadata': {'lastUpdatedAt': '2020-03-28T01:17:07+00:00'}, 'nationality': {}, 'cluster': {}, 'province': {}, 'gender': {}}
+    confirmed = r.json()[0]['positif']
+    recovered = r.json()[0]['sembuh']
+    deaths = r.json()[0]['meninggal']
+    
+    r = requests.get('https://api.kawalcorona.com/positif/')
+    confirmed_w = r.json()['value']
+    
+    r = requests.get('https://api.kawalcorona.com/sembuh/')
+    recovered_w = r.json()['value']
+    
+    r = requests.get('https://api.kawalcorona.com/meninggal/')
+    deaths_w = r.json()['value']
+    
+    update.message.reply_text("Kabar terkini COVID-19 di Indonesia \
+                              \n\nPositif: {}\nSembuh: {}\nMeninggal: {} \
+                              \n\n\nKabar terkini COVID-19 di Dunia \
+                              \n\nPositif: {}\nSembuh: {}\nMeninggal: {} \
+                              \n\nSumber: https://kawalcorona.com/".format(confirmed, recovered, deaths, confirmed_w, recovered_w, deaths_w ))
 
-    confirmed = r.json()['confirmed']['value']
-    recovered = r.json()['recovered']['value']
-    deaths = r.json()['deaths']['value']
-    #active_care = r.json()['activeCare']['value']
-    update_at = r.json()['metadata']['lastUpdatedAt']
-
-    update.message.reply_text("Kabar terkini COVID-19 di Indonesia\n\nUpdate Tanggal: {}\n\nPositif: {}\nSembuh: {}\nMeninggal: {}\n".format(update_at, confirmed, recovered, deaths))
-
-def help(update, context):
+def cegah(update, context):
     bot = context.bot
-    
     bot.send_photo(chat_id=update.message.chat_id, photo=open('img/cucitangan.jpeg', 'rb'))
      
 def about(update, context):
     update.message.reply_text("Bot untuk mengecek kesehatan dan konsultasi dokter dari gejala infeksi virus COVID-19. Sesuai dengan petunjuk Kemenkes. Powered by AMMA. Support By MKAI.\n\n/start - Deteksi gejala infeksi COVID-19\n/info - Kabar terkini COVID-19 di Indonesia\n/help - Cara mencuci tangan")
     
+
 def main():
     # Create the Updater and pass it your bot's token.
     updater = Updater(config.TOKEN, use_context=True)
@@ -240,9 +318,14 @@ def main():
     # $ means "end of line/string"
     # So ^ABC$ will only allow 'ABC'
     
+    #dp.add_handler(CommandHandler("start", start))
+    #dp.add_handler(CallbackQueryHandler(deteksi, pattern='deteksi'))
+    
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('start', start)],
+        entry_points=[CommandHandler('deteksi', deteksi)],
         states={
+            NAMA: [MessageHandler(Filters.text, nama)],
+            
             FIRST: [CallbackQueryHandler(one, pattern='^' + str(ONE) + '$'),
                     CallbackQueryHandler(two, pattern='^' + str(TWO) + '$'),
                     CallbackQueryHandler(three, pattern='^' + str(THREE) + '$'),
@@ -250,11 +333,11 @@ def main():
                     CallbackQueryHandler(five, pattern='^' + str(FIVE) + '$'),
                     CallbackQueryHandler(six, pattern='^' + str(SIX) + '$')],
             
-            SECOND: [CallbackQueryHandler(start_over, pattern='^' + str(ONE) + '$'),
+            SECOND: [CallbackQueryHandler(deteksi_over, pattern='^' + str(ONE) + '$'),  
                      CallbackQueryHandler(end, pattern='^' + str(TWO) + '$')]
         },
         
-        fallbacks=[CommandHandler('start', start)]
+        fallbacks=[CommandHandler('deteksi', deteksi)]
     )
 
     # Add ConversationHandler to dispatcher that will be used for handling
@@ -262,9 +345,9 @@ def main():
     dp.add_handler(conv_handler)
     
     dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("deteksi", deteksi))
     dp.add_handler(CommandHandler("info", info))
-    dp.add_handler(CommandHandler("help", help))
-    dp.add_handler(CommandHandler("about", about))
+    dp.add_handler(CommandHandler("cegah", cegah))
 
     # log all errors
     dp.add_error_handler(error)

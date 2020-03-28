@@ -1,2 +1,7 @@
 config.py
 __pycache__/
+getapi.py
+main2.py
+main3.py
+tessql.py
+testdb.py

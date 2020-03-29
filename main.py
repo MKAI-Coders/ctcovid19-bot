@@ -22,7 +22,7 @@ ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN = range(7)
 global nama_user, gender_user, usia_user, aims_user, alamat_user
 
 def start(update, context):    
-    update.message.reply_text("Hallo, saat ini anda berbicara dengan *CleanTheCovid-19 Bot*. dibuat oleh *Komunitas CleanTheCity dan di support oleh beberapa dokter dari AMMA. Powered by MKA Indonesia*.\n\n*#CleanTheCovid19*\n\nBerikut layanan yang dapat anda akses, tekan tombol dibawah ini :\n\n/start - Perkenalan bot\n/deteksi - Konsul dokter & Test Mandiri COVID-19\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia\n/cegah - Mencegah COVID-19", parse_mode=ParseMode.MARKDOWN)
+    update.message.reply_text("Hallo, saat ini Anda berbicara dengan *CleanTheCovid-19 Bot*. dibuat oleh *Komunitas CleanTheCity dan di support oleh beberapa dokter dari AMMA. Powered by MKA Indonesia*.\n\n*#CleanTheCovid19*\n\nBerikut layanan yang dapat anda akses, tekan tombol dibawah ini :\n\n/start - Perkenalan bot\n/deteksi - Konsul dokter & Test Mandiri COVID-19\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia\n/cegah - Mencegah COVID-19", parse_mode=ParseMode.MARKDOWN)
     
 def deteksi(update, context):
     """Send message on `/start`."""
@@ -52,7 +52,7 @@ def deteksi_over(update, context):
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text="\n\nApakah Dalam 3 hari terakhir, merasakan : \
+        text="\n\nApakah Dalam 3 hari terakhir, Anda merasakan : \
         \n- gejala mirip masuk angin \
         \n- sakit tenggorokan ringan \
         \n- sedikit sakit (tidak demam, tidak lelah, masih makan dan minum secara normal) \
@@ -94,7 +94,7 @@ def aims(update, context):
     
     aims_user = update.message.text
     
-    update.message.reply_text("*Dimana Anda tinggal ?*\nketik dengan format berikut:\n\n*Provinsi/Kota/Kecamatan/Kelurahan atau Desa*", parse_mode=ParseMode.MARKDOWN)  
+    update.message.reply_text("*Di mana Anda tinggal ?*\nketik dengan format berikut:\n\n*Provinsi/Kota/Kecamatan/Kelurahan atau Desa*", parse_mode=ParseMode.MARKDOWN)  
     
     return ALAMAT
 
@@ -173,7 +173,7 @@ def one(update, context):
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text =  "Pada hari ke 4, apakah merasakan : \
+        text =  "Pada hari ke 4, apakah Anda merasakan : \
                 \n- sakit tenggorokan sedikit \
                 \n- suara mulai serak \
                 \n- suhu tubuh berkisar 36,5 C (kondisi ini tergantung orang) \
@@ -274,9 +274,9 @@ def six(update, context):
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text="*Anda Tidak perlu memeriksakan diri ke rumah sakit.* \
+        text="*Anda tidak perlu memeriksakan diri ke rumah sakit.* \
               \nJaga kesehatan diri anda dengan, makan makanan sehat, terhidrasi dengan baik, banyak minum dan istirahat yang cukup.\
-              \n\nJaga Perilaku Hidup Bersih dan Sehat (PHBS) dan kesehatan tubuh. istirahat jika kondisi tidak sehat, hindari keramaian, jaga jarak 1 meter dari orang disekitar dan memakai masker jika terkena batuk dan pilek. \
+              \n\nJaga Perilaku Hidup Bersih dan Sehat (PHBS) dan kesehatan tubuh. Istirahat jika kondisi tidak sehat, hindari keramaian, jaga jarak 1 meter dari orang di sekitar dan memakai masker jika terkena batuk dan pilek. \
               \n\nTingkatkan rasa syukur kepada Allah SWT karena sudah diberi kesehatan.",
         reply_markup=reply_markup,
         parse_mode=ParseMode.MARKDOWN
@@ -297,21 +297,23 @@ def seven(update, context):
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
         text="*Karantina diri anda selama 14 hari terhitung setelah kontak/kunjungan.* \
-              \n\nJaga kesehatan diri anda dengan, makan makanan sehat, terhidrasi dengan baik, banyak minum dan istirahat yang cukup.\
+              \n\nJaga kesehatan diri Anda dengan, makan makanan sehat, terhidrasi dengan baik, banyak minum dan istirahat yang cukup.\
               \n\nJaga Perilaku Hidup Bersih dan Sehat (PHBS) dan kesehatan tubuh. \
               \n\nTingkatkan rasa syukur kepada Allah SWT karena sudah diberi kesehatan. \
-              \n\nBagaimana selama 14 hari karantina ? \
-              \njika anda mulai mengalami gejala dalam 3 hari terakhir, merasakan : \
+              \n\n*Bagaimana selama 14 hari karantina ?* \
+              \nJika dalam masa karantina atau setelahnya Anda merasakan : \
               \n- gejala mirip masuk angin \
               \n- sakit tenggorokan ringan \
-              \n- sedikiti sakit (tidak demam, tidak lelah, masih makan dan minum secara normal) Pada hari ke 4, apakah merasakan : - sakit tenggorokan sedikit \
+              \n- sedikit sakit (tidak demam, tidak lelah, masih makan dan minum secara normal) \
+              \n\nPada hari ke 4, apakah Anda kemudian merasakan : \
+              \n- sakit tenggorokan sedikit \
               \n- mabuk badan \
               \n- suara mulai serak \
               \n- Suhu tubuh berkisar 36,5 C (kondisi ini tergantung orang) \
               \n- mulai anoreksia \
               \n- sakit kepala ringan \
-              \n- Diare ringan \
-              \n\nAnda juga bisa berkonsultasi via chatting dengan relawan dokter kami : [dr. Fatimah Rahmat](https://t.me/Fatimah_Rahmat) agar Anda tetap dalam pengawasan dokter.\n\n*Atau Hubungi 119 EXT 9 atau periksakan diri kerumah sakit rujukan COVID-19 di daerah Anda*",
+              \n- diare ringan \
+              \n\nAnda juga bisa berkonsultasi via chatting dengan relawan dokter kami : [dr. Fatimah Rahmat](https://t.me/Fatimah_Rahmat) agar Anda tetap dalam pengawasan dokter.\n\n*Atau Hubungi 119 EXT 9 atau periksakan diri ke rumah sakit rujukan COVID-19 di daerah Anda*",
         reply_markup=reply_markup,
         parse_mode=ParseMode.MARKDOWN
     )
@@ -329,7 +331,7 @@ def end(update, context):
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text="Semoga {} dan keluarga selalu sehat dan terlindung dari wabah COVID-19. Aamiin".format(user_name)
+        text="Semoga {} dan keluarga selalu sehat dan terlindung dari wabah COVID-19. Aamiin\n\nSilakan untuk mengakses menu lainnya:\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia\n/cegah - Mencegah COVID-19".format(user_name)
     )
     
     return ConversationHandler.END
@@ -355,11 +357,11 @@ def info(update, context):
     r = requests.get('https://api.kawalcorona.com/meninggal/')
     deaths_w = r.json()['value']
     
-    update.message.reply_text("Kabar terkini COVID-19 di Indonesia \
+    update.message.reply_text("*Kabar terkini COVID-19 di Indonesia* \
                               \n\nPositif: {}\nSembuh: {}\nMeninggal: {} \
-                              \n\n\nKabar terkini COVID-19 di Dunia \
+                              \n\n*Kabar terkini COVID-19 di Dunia* \
                               \n\nPositif: {}\nSembuh: {}\nMeninggal: {} \
-                              \n\nSumber: https://kawalcorona.com/".format(confirmed, recovered, deaths, confirmed_w, recovered_w, deaths_w ))
+                              \n\nSumber: https://kawalcorona.com/".format(confirmed, recovered, deaths, confirmed_w, recovered_w, deaths_w ), parse_mode=ParseMode.MARKDOWN),
 
 def cegah(update, context):
     bot = context.bot
@@ -401,9 +403,8 @@ def main():
             
             SECOND: [CallbackQueryHandler(deteksi_over, pattern='^' + str(ONE) + '$'),  
                      CallbackQueryHandler(end, pattern='^' + str(TWO) + '$')]
-        },
-        
-        fallbacks=[CommandHandler('deteksi', deteksi)]
+        }
+        ,fallbacks=[CommandHandler('deteksi', deteksi)]
     )
 
     dp.add_handler(conv_handler)

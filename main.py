@@ -216,7 +216,10 @@ def three(update, context):
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text = "Anda juga bisa berkonsultasi via chatting dengan relawan dokter kami : [dr. Fatimah Rahmat](https://t.me/Fatimah_Rahmat) agar Anda tetap dalam pengawasan dokter.\n\n*Atau Hubungi 119 EXT 9 atau periksakan diri kerumah sakit rujukan COVID-19 di daerah Anda*",
+        text = "*Anda Beresiko Tinggi (Pasien Dalam Pengawasan)!* \
+                \n\nKarantina diri dan perlu pemeriksaan lanjutan ke RS rujukan COVID-19 \
+                \n\nJangan panik, relawan dokter kami : [dr. Fatimah Rahmat](https://t.me/Fatimah_Rahmat) siap memberi arahan atau *Hubungi 119 EXT 9.* \
+                \n\nKlik disini untuk konsultasi dengan dokter Fatimah : [@Fatimah_Rahmat](https://t.me/Fatimah_Rahmat)",
         reply_markup=reply_markup,
         parse_mode=ParseMode.MARKDOWN
     )
@@ -235,7 +238,7 @@ def four(update, context):
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text="\nAnda berada di wilayah pandemi? atau kontak dengan pasien positf COVID-19 ? \
+        text="\nAnda berada di wilayah pandemi? atau kontak dengan pasien positif COVID-19 ? \
               \n\natau memiliki aktifitas harian: \
               \nsebagai pelayan publik (resepsionis, SPG, pegawai bank, dll) ? \
               \n\natau mobilitas tinggi (driver, ekspedisi, dll) ? \
@@ -244,24 +247,6 @@ def four(update, context):
         parse_mode=ParseMode.MARKDOWN
     )
     return FIRST
-
-# def five(update, context):
-#     """Show new choice of buttons"""
-#     query = update.callback_query
-#     bot = context.bot
-#     keyboard = [
-#         [InlineKeyboardButton("Coba cek lagi", callback_data=str(ONE)),
-#          InlineKeyboardButton("Sudah cukup", callback_data=str(TWO))]
-#     ]
-#     reply_markup = InlineKeyboardMarkup(keyboard)
-#     bot.edit_message_text(
-#         chat_id=query.message.chat_id,
-#         message_id=query.message.message_id,
-#         text="Periksakan diri ke dokter terdekat dan istirahat yang cukup",
-#         reply_markup=reply_markup
-#     )
-#     # Transfer to conversation state `SECOND`
-#     return SECOND
 
 def six(update, context):
     """Show new choice of buttons"""
@@ -305,24 +290,17 @@ def five(update, context):
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text="*Karantina diri anda selama 14 hari terhitung setelah kontak/kunjungan.* \
-              \n\nJaga kesehatan diri Anda dengan, makan makanan sehat, terhidrasi dengan baik, banyak minum dan istirahat yang cukup.\
-              \n\nJaga Perilaku Hidup Bersih dan Sehat (PHBS) dan kesehatan tubuh. \
+        text="*Anda Beresiko (Dalam Pengawasan)!* \
+              \n\nKarantina diri anda selama 14 hari terhitung setelah kontak/kunjungan. \
+              \n\nJaga kesehatan diri Anda dengan, makan makanan sehat, terhidrasi dengan baik, banyak minum dan istirahat yang cukup.  \
+              \n\nJaga Perilaku Hidup Bersih dan Sehat (PHBS) dan kesehatan tubuh.    \
               \n\nTingkatkan rasa syukur kepada Allah SWT karena sudah diberi kesehatan. \
-              \n\n*Bagaimana selama 14 hari karantina ?* \
-              \nJika dalam masa karantina atau setelahnya Anda merasakan : \
+              \n\n*Bagaimana selama 14 hari karantina ?*  \
+              \nJika dalam masa karantina atau setelahnya Anda merasakan :  \
               \n- gejala mirip masuk angin \
               \n- sakit tenggorokan ringan \
               \n- sedikit sakit (tidak demam, tidak lelah, masih makan dan minum secara normal) \
-              \n\nPada hari ke 4, apakah Anda kemudian merasakan : \
-              \n- sakit tenggorokan sedikit \
-              \n- mabuk badan \
-              \n- suara mulai serak \
-              \n- Suhu tubuh berkisar 36,5 C (kondisi ini tergantung orang) \
-              \n- mulai anoreksia \
-              \n- sakit kepala ringan \
-              \n- diare ringan \
-              \n\nAnda juga bisa berkonsultasi via chatting dengan relawan dokter kami : [dr. Fatimah Rahmat](https://t.me/Fatimah_Rahmat) agar Anda tetap dalam pengawasan dokter.\n\n*Atau Hubungi 119 EXT 9 atau periksakan diri ke rumah sakit rujukan COVID-19 di daerah Anda*",
+              \n\nAnda perlu pemeriksaan lanjut atau berkonsultasi via chatting dengan relawan dokter kami : [dr. Fatimah Rahmat](https://t.me/Fatimah_Rahmat) agar Anda tetap dalam pengawasan dokter.\n\nKlik disini untuk konsultasi dengan dokter Fatimah : [@Fatimah_Rahmat](https://t.me/Fatimah_Rahmat)",
         reply_markup=reply_markup,
         parse_mode=ParseMode.MARKDOWN
     )

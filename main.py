@@ -12,7 +12,7 @@ Send /start to initiate the conversation.
 Press Ctrl-C on the command line to stop the bot.
 """
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, ReplyKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler, Filters
 import logging
 import config
@@ -21,6 +21,8 @@ import mysql.connector
 
 import requests
 
+import json
+
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -28,7 +30,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 # Stages
-NAMA, GENDER, USIA, ALAMAT, KONFIRM, FIRST, SECOND = range(7) #
+NAMA, GENDER, USIA, ALAMAT, FIRST, SECOND = range(6) #
 
 # Callback data
 ONE, TWO, THREE, FOUR, FIVE, SIX = range(6)
@@ -85,7 +87,7 @@ def gender(update, context):
     global gender_user
     gender_user = update.message.text
     
-    update.message.reply_text("Berapa usia Anda (tahun) ? ")  
+    update.message.reply_text("Berapa usia Anda (tahun) ? ", reply_markup = ReplyKeyboardRemove())  
     
     return USIA
 
@@ -98,19 +100,39 @@ def usia(update, context):
     
     return ALAMAT
 
-def alamat(update, context):
-    global alamat_user, nama_user
-    alamat_user = update.message.text
+# def alamat(update, context):
+#     global alamat_user, nama_user
+#     alamat_user = update.message.text
 
-    reply_keyboard = [['Lanjut']]
+#     #reply_keyboard = [['Lanjut']]
     
-    update.message.reply_text("Terima kasih, data anda sudah terisi. selanjutnya kami akan melakukan assesment, Klik Lanjut.")
-                              #,  reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+#     # query = update.callback_query
+#     # bot = context.bot
+    
+#     # user_name = query.message.chat.first_name
+#     # bot.edit_message_text(
+#     #     chat_id=query.message.chat_id,
+#     #     message_id=query.message.message_id,
+#     #     text="Terima kasih {}, data anda sudah terisi. selanjutnya kami akan melakukan assesment, Klik Lanjut.".format(user_name)
+#     # )
+    
+#     #update.message.reply_text("Terima kasih, data anda sudah terisi. selanjutnya kami akan melakukan assesment, Klik Lanjut.", reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=true))
+    
+#     #query = update.callback_query
+#     bot = context.bot
+#     bot.edit_message_text(
+#         chat_id=update.message.message_id,
+#         message_id=update.message.chat_id,
+#         text="Terima kasih, data anda sudah terisi. selanjutnya kami akan melakukan assesment",
+#         reply_markup=ReplyKeyboardRemove()
+#     )
        
-    return KONFIRM
+#     return KONFIRM
 
-def konfirm(update, context):
+def alamat(update, context):
     global nama_user, gender_user, usia_user, alamat_user
+    
+    alamat_user = update.message.text
 
     user = update.message.from_user
     
@@ -146,7 +168,7 @@ def konfirm(update, context):
     
     # Send message with text and appended InlineKeyboard
     update.message.reply_text(
-        "Apakah Anda pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
+        "Terima kasih, data anda sudah terisi. selanjutnya kami akan melakukan assesment\n\nApakah Anda pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
         reply_markup=reply_markup
     )
     # Tell ConversationHandler that we're in state `FIRST` now
@@ -339,7 +361,7 @@ def main():
             
             ALAMAT: [MessageHandler(Filters.text, alamat)],
             
-            KONFIRM: [MessageHandler(Filters.text, konfirm)],
+            #KONFIRM: [MessageHandler(Filters.text, konfirm)],
             
             FIRST: [CallbackQueryHandler(one, pattern='^' + str(ONE) + '$'),
                     CallbackQueryHandler(two, pattern='^' + str(TWO) + '$'),

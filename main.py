@@ -1,24 +1,8 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""Simple inline keyboard bot with multiple CallbackQueryHandlers.
-This Bot uses the Updater class to handle the bot.
-First, a few callback functions are defined as callback query handler. Then, those functions are
-passed to the Dispatcher and registered at their respective places.
-Then, the bot is started and runs until we press Ctrl-C on the command line.
-Usage:
-Example of a bot that uses inline keyboard that has multiple CallbackQueryHandlers arranged in a
-ConversationHandler.
-Send /start to initiate the conversation.
-Press Ctrl-C on the command line to stop the bot.
-"""
-
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler, Filters
 import logging
 import config
 import mysql.connector
-#import urllib2
-
 import requests
 
 import json
@@ -33,12 +17,12 @@ logger = logging.getLogger(__name__)
 NAMA, GENDER, USIA, AIMS, ALAMAT, FIRST, SECOND = range(7) #
 
 # Callback data
-ONE, TWO, THREE, FOUR, FIVE, SIX = range(6)
+ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN = range(7)
 
 global nama_user, gender_user, usia_user, aims_user, alamat_user
 
 def start(update, context):    
-    update.message.reply_text("Hallo, saat ini anda berbicara dengan *CleanTheCovid-19 Bot*. dibuat oleh *Komunitas CleanTheCity dan di support oleh beberapa dokter dari AMMA. Powered by MKA Indonesia*.\n\n*#CleanTheCovid19*\n\nBerikut layanan yang dapat anda akses, tekan tombol dibawah ini :\n\n/start - Perkenalan bot\n/deteksi - Konsul dokter & Test Mandiri COVID-19\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia\n/cegah - Mencegah COVID-19", ParseMode.MARKDOWN)
+    update.message.reply_text("Hallo, saat ini anda berbicara dengan *CleanTheCovid-19 Bot*. dibuat oleh *Komunitas CleanTheCity dan di support oleh beberapa dokter dari AMMA. Powered by MKA Indonesia*.\n\n*#CleanTheCovid19*\n\nBerikut layanan yang dapat anda akses, tekan tombol dibawah ini :\n\n/start - Perkenalan bot\n/deteksi - Konsul dokter & Test Mandiri COVID-19\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia\n/cegah - Mencegah COVID-19", parse_mode=ParseMode.MARKDOWN)
     
 def deteksi(update, context):
     """Send message on `/start`."""
@@ -46,7 +30,7 @@ def deteksi(update, context):
     user = update.message.from_user
     
     logger.info("User %s started the conversation.", user.first_name)
-    update.message.reply_text("Silakan isi data diri terlebih dahulu.\n\nSiapa nama Anda ?")    
+    update.message.reply_text("Silakan isi data diri terlebih dahulu.\n\nSiapa *nama Anda* ?", parse_mode=ParseMode.MARKDOWN)    
     return NAMA
 
 def deteksi_over(update, context):
@@ -59,7 +43,7 @@ def deteksi_over(update, context):
     bot = context.bot
     keyboard = [
         [InlineKeyboardButton("Ya", callback_data=str(ONE)),
-         InlineKeyboardButton("Tidak", callback_data=str(TWO))]
+         InlineKeyboardButton("Tidak", callback_data=str(FOUR))]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     # Instead of sending a new message, edit the message that
@@ -68,8 +52,13 @@ def deteksi_over(update, context):
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text="Apakah pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
-        reply_markup=reply_markup
+        text="\n\nApakah Dalam 3 hari terakhir, merasakan : \
+        \n- gejala mirip masuk angin \
+        \n- sakit tenggorokan ringan \
+        \n- sedikit sakit (tidak demam, tidak lelah, masih makan dan minum secara normal) \
+        \n\n*Tekan tombol dibawah ini :*",
+        reply_markup=reply_markup,
+        parse_mode=ParseMode.MARKDOWN
     )
     return FIRST
 
@@ -87,7 +76,7 @@ def gender(update, context):
     global gender_user
     gender_user = update.message.text
     
-    update.message.reply_text("Berapa usia Anda (tahun) ? ", reply_markup = ReplyKeyboardRemove())  
+    update.message.reply_text("Berapa *usia Anda* (tahun) ? ", reply_markup = ReplyKeyboardRemove(), parse_mode=ParseMode.MARKDOWN)  
     
     return USIA
 
@@ -96,7 +85,7 @@ def usia(update, context):
     global usia_user
     usia_user = update.message.text
     
-    update.message.reply_text("Berapa nomor AIMS Anda ?")  
+    update.message.reply_text("Berapa *nomor AIMS* Anda ?", parse_mode=ParseMode.MARKDOWN)  
     
     return AIMS
 
@@ -105,7 +94,7 @@ def aims(update, context):
     
     aims_user = update.message.text
     
-    update.message.reply_text("Dimana alamat Anda ? Ketik dengan format berikut Provinsi/Kota/Kecamatan atau Desa")  
+    update.message.reply_text("*Dimana Anda tinggal ?*\nketik dengan format berikut:\n\n*Provinsi/Kota/Kecamatan/Kelurahan atau Desa*", parse_mode=ParseMode.MARKDOWN)  
     
     return ALAMAT
 
@@ -152,14 +141,20 @@ def alamat(update, context):
     
     keyboard = [
         [InlineKeyboardButton("Ya", callback_data=str(ONE)),
-         InlineKeyboardButton("Tidak", callback_data=str(TWO))]
+         InlineKeyboardButton("Tidak", callback_data=str(FOUR))]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     # Send message with text and appended InlineKeyboard
     update.message.reply_text(
-        "Terima kasih, data anda sudah terisi. selanjutnya kami akan melakukan assesment.\n\nApakah Anda pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
-        reply_markup=reply_markup
+        "Terima kasih, data anda sudah terisi. selanjutnya kami akan melakukan assesment. \
+        \n\nApakah Dalam 3 hari terakhir, merasakan : \
+        \n- gejala mirip masuk angin \
+        \n- sakit tenggorokan ringan \
+        \n- sedikit sakit (tidak demam, tidak lelah, masih makan dan minum secara normal) \
+        \n\n*Tekan tombol dibawah ini :*",
+        reply_markup=reply_markup,
+        parse_mode=ParseMode.MARKDOWN
     )
     # Tell ConversationHandler that we're in state `FIRST` now
     return FIRST
@@ -178,8 +173,15 @@ def one(update, context):
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text="Sedang atau pernah mengalami :\n1. demam (>38 C)\n2. pilek\n3. batuk\n4. sesak napas",
-        reply_markup=reply_markup
+        text =  "Pada hari ke 4, apakah merasakan : \
+                \n- sakit tenggorokan sedikit \
+                \n- suara mulai serak \
+                \n- suhu tubuh berkisar 36,5 C (kondisi ini tergantung orang) \
+                \n- sakit kepala ringan \
+                \n- diare ringan \
+                \n\n*Tekan tombol dibawah ini :*",
+        reply_markup=reply_markup,
+        parse_mode=ParseMode.MARKDOWN
     )
     return FIRST
 
@@ -213,8 +215,9 @@ def three(update, context):
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text="Hubungi dokter atau periksakan diri ke rumah sakit rujukan COVID-19 di daerah Anda",
-        reply_markup=reply_markup
+        text = "Anda juga bisa berkonsultasi via chatting dengan relawan dokter kami : [dr. Fatimah Rahmat](https://t.me/Fatimah_Rahmat) agar Anda tetap dalam pengawasan dokter.\n\n*Atau Hubungi 119 EXT 9 atau periksakan diri kerumah sakit rujukan COVID-19 di daerah Anda*",
+        reply_markup=reply_markup,
+        parse_mode=ParseMode.MARKDOWN
     )
     # Transfer to conversation state `SECOND`
     return SECOND
@@ -224,15 +227,20 @@ def four(update, context):
     query = update.callback_query
     bot = context.bot
     keyboard = [
-        [InlineKeyboardButton("Ya", callback_data=str(THREE)),
+        [InlineKeyboardButton("Ya", callback_data=str(SEVEN)),
          InlineKeyboardButton("Tidak", callback_data=str(SIX))]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text="Karantina diri Anda selama 14 hari terhitung setelah kontak/kunjungan\n\nApakah selama 14 hari karantina diri Anda mengalami : \n1. demam (>38 C)\n2. pilek\n3. batuk\n4. sesak napas",
-        reply_markup=reply_markup
+        text="\nAnda berada di wilayah pandemi? atau kontak dengan pasien positf COVID-19 ? \
+              \n\natau memiliki aktifitas harian: \
+              \nsebagai pelayan publik (resepsionis, SPG, pegawai bank, dll) ? \
+              \n\natau mobilitas tinggi (driver, ekspedisi, dll) ? \
+              \n\n*Tekan tombol dibawah ini :*",
+        reply_markup=reply_markup,
+        parse_mode=ParseMode.MARKDOWN
     )
     return FIRST
 
@@ -266,8 +274,46 @@ def six(update, context):
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text="Anda tidak perlu memeriksakan diri ke rumah sakit. Selalu jaga kesehatan Anda",
-        reply_markup=reply_markup
+        text="*Anda Tidak perlu memeriksakan diri ke rumah sakit.* \
+              \nJaga kesehatan diri anda dengan, makan makanan sehat, terhidrasi dengan baik, banyak minum dan istirahat yang cukup.\
+              \n\nJaga Perilaku Hidup Bersih dan Sehat (PHBS) dan kesehatan tubuh. istirahat jika kondisi tidak sehat, hindari keramaian, jaga jarak 1 meter dari orang disekitar dan memakai masker jika terkena batuk dan pilek. \
+              \n\nTingkatkan rasa syukur kepada Allah SWT karena sudah diberi kesehatan.",
+        reply_markup=reply_markup,
+        parse_mode=ParseMode.MARKDOWN
+    )
+    # Transfer to conversation state `SECOND`
+    return SECOND
+
+def seven(update, context):
+    """Show new choice of buttons"""
+    query = update.callback_query
+    bot = context.bot
+    keyboard = [
+        [InlineKeyboardButton("Coba cek lagi", callback_data=str(ONE)),
+         InlineKeyboardButton("Sudah cukup", callback_data=str(TWO))]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    bot.edit_message_text(
+        chat_id=query.message.chat_id,
+        message_id=query.message.message_id,
+        text="*Karantina diri anda selama 14 hari terhitung setelah kontak/kunjungan.* \
+              \n\nJaga kesehatan diri anda dengan, makan makanan sehat, terhidrasi dengan baik, banyak minum dan istirahat yang cukup.\
+              \n\nJaga Perilaku Hidup Bersih dan Sehat (PHBS) dan kesehatan tubuh. \
+              \n\nTingkatkan rasa syukur kepada Allah SWT karena sudah diberi kesehatan. \
+              \n\nBagaimana selama 14 hari karantina ? \
+              \njika anda mulai mengalami gejala dalam 3 hari terakhir, merasakan : \
+              \n- gejala mirip masuk angin \
+              \n- sakit tenggorokan ringan \
+              \n- sedikiti sakit (tidak demam, tidak lelah, masih makan dan minum secara normal) Pada hari ke 4, apakah merasakan : - sakit tenggorokan sedikit \
+              \n- mabuk badan \
+              \n- suara mulai serak \
+              \n- Suhu tubuh berkisar 36,5 C (kondisi ini tergantung orang) \
+              \n- mulai anoreksia \
+              \n- sakit kepala ringan \
+              \n- Diare ringan \
+              \n\nAnda juga bisa berkonsultasi via chatting dengan relawan dokter kami : [dr. Fatimah Rahmat](https://t.me/Fatimah_Rahmat) agar Anda tetap dalam pengawasan dokter.\n\n*Atau Hubungi 119 EXT 9 atau periksakan diri kerumah sakit rujukan COVID-19 di daerah Anda*",
+        reply_markup=reply_markup,
+        parse_mode=ParseMode.MARKDOWN
     )
     # Transfer to conversation state `SECOND`
     return SECOND
@@ -329,16 +375,6 @@ def main():
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
-
-    # Setup conversation handler with the states FIRST and SECOND
-    # Use the pattern parameter to pass CallbackQueries with specific
-    # data pattern to the corresponding handlers.
-    # ^ means "start of line/string"
-    # $ means "end of line/string"
-    # So ^ABC$ will only allow 'ABC'
-    
-    #dp.add_handler(CommandHandler("start", start))
-    #dp.add_handler(CallbackQueryHandler(deteksi, pattern='deteksi'))
     
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('deteksi', deteksi)],
@@ -360,7 +396,8 @@ def main():
                     CallbackQueryHandler(three, pattern='^' + str(THREE) + '$'),
                     CallbackQueryHandler(four, pattern='^' + str(FOUR) + '$'),
                     CallbackQueryHandler(five, pattern='^' + str(FIVE) + '$'),
-                    CallbackQueryHandler(six, pattern='^' + str(SIX) + '$')],
+                    CallbackQueryHandler(six, pattern='^' + str(SIX) + '$'),
+                    CallbackQueryHandler(seven, pattern='^' + str(SEVEN) + '$')],
             
             SECOND: [CallbackQueryHandler(deteksi_over, pattern='^' + str(ONE) + '$'),  
                      CallbackQueryHandler(end, pattern='^' + str(TWO) + '$')]
@@ -369,8 +406,6 @@ def main():
         fallbacks=[CommandHandler('deteksi', deteksi)]
     )
 
-    # Add ConversationHandler to dispatcher that will be used for handling
-    # updates
     dp.add_handler(conv_handler)
     
     dp.add_handler(CommandHandler("start", start))

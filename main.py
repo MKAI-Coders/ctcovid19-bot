@@ -17,14 +17,33 @@ logger = logging.getLogger(__name__)
 NAMA, GENDER, USIA, AIMS, ALAMAT, FIRST, SECOND = range(7) #
 
 # Callback data
-ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN = range(7)
+ONE, TWO, THREE, FOUR, FIVE, SIX = range(6)
 
 global nama_user, gender_user, usia_user, aims_user, alamat_user
 
-def start(update, context):    
-    update.message.reply_text("Hallo, saat ini Anda berbicara dengan *CleanTheCovid-19 Bot*. dibuat oleh *Komunitas CleanTheCity dan di support oleh beberapa dokter dari AMMA. Powered by MKA Indonesia*.\n\n*#CleanTheCovid19*\n\nBerikut layanan yang dapat anda akses, tekan tombol dibawah ini :\n\n/start - Perkenalan bot\n/deteksi - Konsul dokter & Test Mandiri COVID-19\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia\n/cegah - Mencegah COVID-19", parse_mode=ParseMode.MARKDOWN)
+def db_write(user, kondisi):
+        # Connect to server
+    db = mysql.connector.connect(
+        host=config.host,
+        port=3306,
+        database='ctcovid19',
+        user=config.user,
+        password=config.passwd)
+
+    # Get a cursor
+    cur = db.cursor()
+    insert_query = "INSERT INTO user_short (id_telegram, username_telegram, nama_telegram, diagnosis) VALUES (%s, %s, %s, %s)"
+    # Execute a query
+    cur.execute(insert_query, (user.id, user.username, user.first_name, kondisi))
     
-def deteksi(update, context):
+    db.commit()
+    cur.close()
+    db.close()
+
+def start(update, context):    
+    update.message.reply_text("[inline mention of a user](tg://user?id=1090288573)Halo, saat ini Anda berbicara dengan *CleanTheCovid-19 Bot*. dibuat oleh *Komunitas CleanTheCity dan di support oleh beberapa dokter dari AMMA. Powered by MKA Indonesia*.\n\n*#CleanTheCovid19*\n\nBerikut layanan yang dapat anda akses, tekan tombol dibawah ini :\n\n/start - Perkenalan bot\n/deteksi - Konsul dokter & Test Mandiri COVID-19\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia\n/cegah - Mencegah COVID-19", parse_mode=ParseMode.MARKDOWN)
+    
+def deteksi_(update, context):
     """Send message on `/start`."""
     # Get user that sent /start and log his name
     user = update.message.from_user
@@ -34,11 +53,12 @@ def deteksi(update, context):
     return NAMA
 
 def deteksi_over(update, context):
-    global nama_user
+    #global nama_user
     
     """Prompt same text & keyboard as `start` does but not as new message"""
     # Get CallbackQuery from Update
     query = update.callback_query
+    user = query.message.chat
     # Get Bot from CallbackContext
     bot = context.bot
     keyboard = [
@@ -52,11 +72,11 @@ def deteksi_over(update, context):
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text="\n\nApakah Dalam 3 hari terakhir, Anda merasakan : \
+        text = "Halo {},\nApakah dalam 3 hari terakhir Anda merasakan : \
         \n- gejala mirip masuk angin \
         \n- sakit tenggorokan ringan \
         \n- sedikit sakit (tidak demam, tidak lelah, masih makan dan minum secara normal) \
-        \n\n*Tekan tombol dibawah ini :*",
+        \n\n*Tekan tombol dibawah ini :*".format(user.first_name),
         reply_markup=reply_markup,
         parse_mode=ParseMode.MARKDOWN
     )
@@ -65,6 +85,8 @@ def deteksi_over(update, context):
 def nama(update, context):
     global nama_user
     nama_user = update.message.text
+    
+    #print(update)
     
     reply_keyboard = [['Laki-laki', 'Perempuan']]
     
@@ -109,35 +131,10 @@ def aims(update, context):
 
 #     return KONFIRM
 
-def alamat(update, context):
-    global nama_user, gender_user, usia_user, alamat_user, aims_user
-    
-    alamat_user = update.message.text
+def deteksi(update, context):
     user = update.message.from_user
     
-    # Connect to server
-    db = mysql.connector.connect(
-        host=config.host,
-        port=3306,
-        database='ctcovid19',
-        user=config.user,
-        password=config.passwd)
-
-    # Get a cursor
-    cur = db.cursor()
-    
-    insert_query = "INSERT INTO user (id_telegram, username_telegram, nama_telegram, nama, gender, usia, aims, alamat) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-
-    # Execute a query
-    cur.execute(insert_query, (user.id, user.username, user.first_name, nama_user, gender_user, usia_user, aims_user, alamat_user))
-    
-    db.commit()
-    # Close connection
-    
-    cur.close()
-    db.close()
-    
-    logger.info("Captured data : %s %s %s %s %s %s %s %s", user.id, user.username, user.first_name, nama_user, gender_user, usia_user, aims_user, alamat_user)
+    logger.info("Captured data : %s %s %s", user.id, user.username, user.first_name)
     
     keyboard = [
         [InlineKeyboardButton("Ya", callback_data=str(ONE)),
@@ -147,12 +144,11 @@ def alamat(update, context):
     
     # Send message with text and appended InlineKeyboard
     update.message.reply_text(
-        "Terima kasih, data anda sudah terisi. selanjutnya kami akan melakukan assesment. \
-        \n\nApakah Dalam 3 hari terakhir, merasakan : \
+        "Halo {},\nApakah dalam 3 hari terakhir Anda merasakan : \
         \n- gejala mirip masuk angin \
         \n- sakit tenggorokan ringan \
         \n- sedikit sakit (tidak demam, tidak lelah, masih makan dan minum secara normal) \
-        \n\n*Tekan tombol dibawah ini :*",
+        \n\n*Tekan tombol dibawah ini :*".format(user.first_name),
         reply_markup=reply_markup,
         parse_mode=ParseMode.MARKDOWN
     )
@@ -205,7 +201,12 @@ def two(update, context):
 
 def three(update, context):
     """Show new choice of buttons"""
+
     query = update.callback_query
+    
+    user = query.message.chat
+    db_write(user, "sakit")
+    
     bot = context.bot
     keyboard = [
         [InlineKeyboardButton("Coba cek lagi", callback_data=str(ONE)),
@@ -227,7 +228,7 @@ def four(update, context):
     query = update.callback_query
     bot = context.bot
     keyboard = [
-        [InlineKeyboardButton("Ya", callback_data=str(SEVEN)),
+        [InlineKeyboardButton("Ya", callback_data=str(FIVE)),
          InlineKeyboardButton("Tidak", callback_data=str(SIX))]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -244,27 +245,31 @@ def four(update, context):
     )
     return FIRST
 
-def five(update, context):
-    """Show new choice of buttons"""
-    query = update.callback_query
-    bot = context.bot
-    keyboard = [
-        [InlineKeyboardButton("Coba cek lagi", callback_data=str(ONE)),
-         InlineKeyboardButton("Sudah cukup", callback_data=str(TWO))]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    bot.edit_message_text(
-        chat_id=query.message.chat_id,
-        message_id=query.message.message_id,
-        text="Periksakan diri ke dokter terdekat dan istirahat yang cukup",
-        reply_markup=reply_markup
-    )
-    # Transfer to conversation state `SECOND`
-    return SECOND
+# def five(update, context):
+#     """Show new choice of buttons"""
+#     query = update.callback_query
+#     bot = context.bot
+#     keyboard = [
+#         [InlineKeyboardButton("Coba cek lagi", callback_data=str(ONE)),
+#          InlineKeyboardButton("Sudah cukup", callback_data=str(TWO))]
+#     ]
+#     reply_markup = InlineKeyboardMarkup(keyboard)
+#     bot.edit_message_text(
+#         chat_id=query.message.chat_id,
+#         message_id=query.message.message_id,
+#         text="Periksakan diri ke dokter terdekat dan istirahat yang cukup",
+#         reply_markup=reply_markup
+#     )
+#     # Transfer to conversation state `SECOND`
+#     return SECOND
 
 def six(update, context):
     """Show new choice of buttons"""
     query = update.callback_query
+    
+    user = query.message.chat
+    db_write(user, "sehat")
+    
     bot = context.bot
     keyboard = [
         [InlineKeyboardButton("Coba cek lagi", callback_data=str(ONE)),
@@ -284,9 +289,13 @@ def six(update, context):
     # Transfer to conversation state `SECOND`
     return SECOND
 
-def seven(update, context):
+def five(update, context):
     """Show new choice of buttons"""
     query = update.callback_query
+    
+    user = query.message.chat
+    db_write(user, "karantina")
+    
     bot = context.bot
     keyboard = [
         [InlineKeyboardButton("Coba cek lagi", callback_data=str(ONE)),
@@ -381,25 +390,22 @@ def main():
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('deteksi', deteksi)],
         states={
-            NAMA: [MessageHandler(Filters.text, nama)],
+            # NAMA: [MessageHandler(Filters.text, nama)],
             
-            GENDER: [MessageHandler(Filters.text, gender)],
+            # GENDER: [MessageHandler(Filters.text, gender)],
             
-            USIA: [MessageHandler(Filters.text, usia)],
+            # USIA: [MessageHandler(Filters.text, usia)],
             
-            AIMS: [MessageHandler(Filters.text, aims)],
+            # AIMS: [MessageHandler(Filters.text, aims)],
             
-            ALAMAT: [MessageHandler(Filters.text, alamat)],
-            
-            #KONFIRM: [MessageHandler(Filters.text, konfirm)],
+            # ALAMAT: [MessageHandler(Filters.text, alamat)],
             
             FIRST: [CallbackQueryHandler(one, pattern='^' + str(ONE) + '$'),
                     CallbackQueryHandler(two, pattern='^' + str(TWO) + '$'),
                     CallbackQueryHandler(three, pattern='^' + str(THREE) + '$'),
                     CallbackQueryHandler(four, pattern='^' + str(FOUR) + '$'),
                     CallbackQueryHandler(five, pattern='^' + str(FIVE) + '$'),
-                    CallbackQueryHandler(six, pattern='^' + str(SIX) + '$'),
-                    CallbackQueryHandler(seven, pattern='^' + str(SEVEN) + '$')],
+                    CallbackQueryHandler(six, pattern='^' + str(SIX) + '$')],
             
             SECOND: [CallbackQueryHandler(deteksi_over, pattern='^' + str(ONE) + '$'),  
                      CallbackQueryHandler(end, pattern='^' + str(TWO) + '$')]

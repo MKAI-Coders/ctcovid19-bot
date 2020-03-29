@@ -12,10 +12,11 @@ Send /start to initiate the conversation.
 Press Ctrl-C on the command line to stop the bot.
 """
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler, Filters
 import logging
 import config
+import mysql.connector
 #import urllib2
 
 import requests
@@ -27,39 +28,28 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 # Stages
-NAMA, FIRST, SECOND = range(3)
+NAMA, GENDER, USIA, ALAMAT, KONFIRM, FIRST, SECOND = range(7) #
 
 # Callback data
 ONE, TWO, THREE, FOUR, FIVE, SIX = range(6)
 
-def start(update, context):
-    update.message.reply_text("Hallo, saat ini anda berbicara dengan Clean The Covid-19 Bot. Dibuat oleh Komunitas Clean the City di support oleh beberapa dokter dari AMMA. Powered by MKA Indonesia.\n\nBerikut layanan yang dapat anda akses, tekan tombol dibawah ini:\n\n/deteksi - Deteksi gejala infeksi COVID-19\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia\n/cegah - Mencegah COVID-19")
+global nama_user, gender_user, usia_user, alamat_user
 
+def start(update, context):    
+    update.message.reply_text("Hallo, saat ini anda berbicara dengan *CleanTheCovid-19 Bot*. dibuat oleh *Komunitas CleanTheCity dan di support oleh beberapa dokter dari AMMA. Powered by MKA Indonesia*.\n\n*#CleanTheCovid19*\n\nBerikut layanan yang dapat anda akses, tekan tombol dibawah ini :\n\n/start - Perkenalan bot\n/deteksi - Konsul dokter & Test Mandiri COVID-19\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia\n/cegah - Mencegah COVID-19", ParseMode.MARKDOWN)
+    
 def deteksi(update, context):
     """Send message on `/start`."""
     # Get user that sent /start and log his name
     user = update.message.from_user
     
     logger.info("User %s started the conversation.", user.first_name)
-    update.message.reply_text("Silakan mengisi data terlebih dahulu.\nMasukkan nama anda")    
+    update.message.reply_text("Silakan isi data diri terlebih dahulu.\nSiapa nama Anda")    
     return NAMA
 
-# def deteksi_over(update, context):
-#     keyboard = [
-#         [InlineKeyboardButton("Ya", callback_data=str(ONE)),
-#          InlineKeyboardButton("Tidak", callback_data=str(TWO))]
-#     ]
-#     reply_markup = InlineKeyboardMarkup(keyboard)
-    
-#     # Send message with text and appended InlineKeyboard
-#     update.message.reply_text(
-#         "Apakah kamu pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
-#         reply_markup=reply_markup
-#     )
-#     # Tell ConversationHandler that we're in state `FIRST` now
-#     return FIRST
-
 def deteksi_over(update, context):
+    global nama_user
+    
     """Prompt same text & keyboard as `start` does but not as new message"""
     # Get CallbackQuery from Update
     query = update.callback_query
@@ -76,14 +66,76 @@ def deteksi_over(update, context):
     bot.edit_message_text(
         chat_id=query.message.chat_id,
         message_id=query.message.message_id,
-        text="Apakah kamu pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
+        text="Apakah pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
         reply_markup=reply_markup
     )
     return FIRST
 
 def nama(update, context):
+    global nama_user
+    nama_user = update.message.text
+    
+    reply_keyboard = [['Laki-laki', 'Perempuan']]
+    
+    update.message.reply_text("Apakah anda Laki-laki atau Perempuan?", reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))  
+
+    return GENDER
+
+def gender(update, context):
+    global gender_user
+    gender_user = update.message.text
+    
+    update.message.reply_text("Berapa usia Anda (tahun) ? ")  
+    
+    return USIA
+
+def usia(update, context):
+    
+    global usia_user
+    usia_user = update.message.text
+    
+    update.message.reply_text("Dimana alamat Anda ? Ketik dengan format berikut Provinsi/Kota/Kecamatan atau Desa")  
+    
+    return ALAMAT
+
+def alamat(update, context):
+    global alamat_user, nama_user
+    alamat_user = update.message.text
+
+    reply_keyboard = [['Lanjut']]
+    
+    update.message.reply_text("Terima kasih, data anda sudah terisi. selanjutnya kami akan melakukan assesment, Klik Lanjut.".format(nama_user),  reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+       
+    return KONFIRM
+
+def konfirm(update, context):
+    global nama_user, gender_user, usia_user, alamat_user
+
     user = update.message.from_user
-    logger.info("Bio of %s: %s", user.first_name, update.message.text)
+    
+    # Connect to server
+    db = mysql.connector.connect(
+        host=config.host,
+        port=3306,
+        database='ctcovid19',
+        user=config.user,
+        password=config.passwd)
+
+    # Get a cursor
+    cur = db.cursor()
+    
+    insert_query = "INSERT INTO user (nama, gender, usia, alamat) VALUES (%s, %s, %s, %s)"
+
+    # Execute a query
+    cur.execute(insert_query, (nama_user, gender_user, usia_user, alamat_user))
+    
+    db.commit()
+    # Close connection
+    
+    cur.close()
+    db.close()
+    
+    logger.info("Bio of %s: %s %s %s %s", user.first_name, nama_user, gender_user, usia_user, alamat_user)
     
     keyboard = [
         [InlineKeyboardButton("Ya", callback_data=str(ONE)),
@@ -93,57 +145,11 @@ def nama(update, context):
     
     # Send message with text and appended InlineKeyboard
     update.message.reply_text(
-        "Apakah kamu pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
+        "Apakah Anda pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
         reply_markup=reply_markup
     )
     # Tell ConversationHandler that we're in state `FIRST` now
     return FIRST
-
-# def one(update, context):
-#     """Send message on `/start`."""
-#     # Get user that sent /start and log his name
-#     # user = update.message.from_user
-#     # logger.info("User %s started the conversation.", user.first_name)
-    
-#     # Build InlineKeyboard where each button has a displayed text
-#     # and a string as callback_data
-#     # The keyboard is a list of button rows, where each row is in turn
-#     # a list (hence `[[...]]`).
-#     keyboard = [
-#         [InlineKeyboardButton("Ya", callback_data=str(ONE)),
-#          InlineKeyboardButton("Tidak", callback_data=str(TWO))]
-#     ]
-#     reply_markup = InlineKeyboardMarkup(keyboard)
-    
-#     # Send message with text and appended InlineKeyboard
-#     update.message.reply_text(
-#         "Apakah kamu pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
-#         reply_markup=reply_markup
-#     )
-#     # Tell ConversationHandler that we're in state `FIRST` now
-#     return FIRST
-
-# def deteksi_over(update, context):
-#     """Prompt same text & keyboard as `start` does but not as new message"""
-#     # Get CallbackQuery from Update
-#     query = update.callback_query
-#     # Get Bot from CallbackContext
-#     bot = context.bot
-#     keyboard = [
-#         [InlineKeyboardButton("Ya", callback_data=str(ONE)),
-#          InlineKeyboardButton("Tidak", callback_data=str(TWO))]
-#     ]
-#     reply_markup = InlineKeyboardMarkup(keyboard)
-#     # Instead of sending a new message, edit the message that
-#     # originated the CallbackQuery. This gives the feeling of an
-#     # interactive menu.
-#     bot.edit_message_text(
-#         chat_id=query.message.chat_id,
-#         message_id=query.message.message_id,
-#         text="Pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
-#         reply_markup=reply_markup
-#     )
-#     return FIRST
 
 # Kalo Ya
 def one(update, context):
@@ -325,6 +331,14 @@ def main():
         entry_points=[CommandHandler('deteksi', deteksi)],
         states={
             NAMA: [MessageHandler(Filters.text, nama)],
+            
+            GENDER: [MessageHandler(Filters.text, gender)],
+            
+            USIA: [MessageHandler(Filters.text, usia)],
+            
+            ALAMAT: [MessageHandler(Filters.text, alamat)],
+            
+            KONFIRM: [MessageHandler(Filters.text, konfirm)],
             
             FIRST: [CallbackQueryHandler(one, pattern='^' + str(ONE) + '$'),
                     CallbackQueryHandler(two, pattern='^' + str(TWO) + '$'),

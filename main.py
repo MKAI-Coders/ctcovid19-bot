@@ -41,7 +41,7 @@ def db_write(user, kondisi):
     db.close()
 
 def start(update, context):    
-    update.message.reply_text("[inline mention of a user](tg://user?id=1090288573)Halo, saat ini Anda berbicara dengan *CleanTheCovid-19 Bot*. dibuat oleh *Komunitas CleanTheCity dan di support oleh beberapa dokter dari AMMA. Powered by MKA Indonesia*.\n\n*#CleanTheCovid19*\n\nBerikut layanan yang dapat anda akses, tekan tombol dibawah ini :\n\n/start - Perkenalan bot\n/deteksi - Konsul dokter & Test Mandiri COVID-19\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia\n/cegah - Mencegah COVID-19", parse_mode=ParseMode.MARKDOWN)
+    update.message.reply_text("Halo, saat ini Anda berbicara dengan *CleanTheCovid-19 Bot*. dibuat oleh *Komunitas CleanTheCity dan di support oleh beberapa dokter dari AMMA. Powered by MKA Indonesia*.\n\n*#CleanTheCovid19*\n\nBerikut layanan yang dapat anda akses, tekan tombol dibawah ini :\n\n/start - Perkenalan bot\n/deteksi - Konsul dokter & Test Mandiri COVID-19\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia\n/cegah - Mencegah COVID-19", parse_mode=ParseMode.MARKDOWN)
     
 def deteksi_(update, context):
     """Send message on `/start`."""

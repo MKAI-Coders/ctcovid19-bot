@@ -126,10 +126,10 @@ def alamat(update, context):
     # Get a cursor
     cur = db.cursor()
     
-    insert_query = "INSERT INTO user (nama, gender, usia, aims, alamat) VALUES (%s, %s, %s,%s, %s)"
+    insert_query = "INSERT INTO user (id_telegram, username_telegram, nama_telegram, nama, gender, usia, aims, alamat) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
 
     # Execute a query
-    cur.execute(insert_query, (nama_user, gender_user, usia_user, aims_user, alamat_user))
+    cur.execute(insert_query, (user.id, user.username, user.first_name, nama_user, gender_user, usia_user, aims_user, alamat_user))
     
     db.commit()
     # Close connection
@@ -137,7 +137,7 @@ def alamat(update, context):
     cur.close()
     db.close()
     
-    logger.info("Bio of %s: %s %s %s %s", user.first_name, nama_user, gender_user, usia_user, alamat_user)
+    logger.info("Captured data : %s %s %s %s %s %s %s %s", user.id, user.username, user.first_name, nama_user, gender_user, usia_user, aims_user, alamat_user)
     
     keyboard = [
         [InlineKeyboardButton("Ya", callback_data=str(ONE)),

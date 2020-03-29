@@ -30,12 +30,12 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 # Stages
-NAMA, GENDER, USIA, ALAMAT, FIRST, SECOND = range(6) #
+NAMA, GENDER, USIA, AIMS, ALAMAT, FIRST, SECOND = range(7) #
 
 # Callback data
 ONE, TWO, THREE, FOUR, FIVE, SIX = range(6)
 
-global nama_user, gender_user, usia_user, alamat_user
+global nama_user, gender_user, usia_user, aims_user, alamat_user
 
 def start(update, context):    
     update.message.reply_text("Hallo, saat ini anda berbicara dengan *CleanTheCovid-19 Bot*. dibuat oleh *Komunitas CleanTheCity dan di support oleh beberapa dokter dari AMMA. Powered by MKA Indonesia*.\n\n*#CleanTheCovid19*\n\nBerikut layanan yang dapat anda akses, tekan tombol dibawah ini :\n\n/start - Perkenalan bot\n/deteksi - Konsul dokter & Test Mandiri COVID-19\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia\n/cegah - Mencegah COVID-19", ParseMode.MARKDOWN)
@@ -46,7 +46,7 @@ def deteksi(update, context):
     user = update.message.from_user
     
     logger.info("User %s started the conversation.", user.first_name)
-    update.message.reply_text("Silakan isi data diri terlebih dahulu.\nSiapa nama Anda")    
+    update.message.reply_text("Silakan isi data diri terlebih dahulu.\n\nSiapa nama Anda ?")    
     return NAMA
 
 def deteksi_over(update, context):
@@ -96,44 +96,34 @@ def usia(update, context):
     global usia_user
     usia_user = update.message.text
     
+    update.message.reply_text("Berapa nomor AIMS Anda ?")  
+    
+    return AIMS
+
+def aims(update, context):
+    global aims_user
+    
+    aims_user = update.message.text
+    
     update.message.reply_text("Dimana alamat Anda ? Ketik dengan format berikut Provinsi/Kota/Kecamatan atau Desa")  
     
     return ALAMAT
 
 # def alamat(update, context):
-#     global alamat_user, nama_user
+#     global alamat_user
 #     alamat_user = update.message.text
+    
+#     reply_keyboard = [['Lanjut']]
+    
+#     update.message.reply_text("Terima kasih, data anda sudah terisi. selanjutnya kami akan melakukan assesment. Klik Lanjut.", reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))  
+    
 
-#     #reply_keyboard = [['Lanjut']]
-    
-#     # query = update.callback_query
-#     # bot = context.bot
-    
-#     # user_name = query.message.chat.first_name
-#     # bot.edit_message_text(
-#     #     chat_id=query.message.chat_id,
-#     #     message_id=query.message.message_id,
-#     #     text="Terima kasih {}, data anda sudah terisi. selanjutnya kami akan melakukan assesment, Klik Lanjut.".format(user_name)
-#     # )
-    
-#     #update.message.reply_text("Terima kasih, data anda sudah terisi. selanjutnya kami akan melakukan assesment, Klik Lanjut.", reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=true))
-    
-#     #query = update.callback_query
-#     bot = context.bot
-#     bot.edit_message_text(
-#         chat_id=update.message.message_id,
-#         message_id=update.message.chat_id,
-#         text="Terima kasih, data anda sudah terisi. selanjutnya kami akan melakukan assesment",
-#         reply_markup=ReplyKeyboardRemove()
-#     )
-       
 #     return KONFIRM
 
 def alamat(update, context):
-    global nama_user, gender_user, usia_user, alamat_user
+    global nama_user, gender_user, usia_user, alamat_user, aims_user
     
     alamat_user = update.message.text
-
     user = update.message.from_user
     
     # Connect to server
@@ -147,10 +137,10 @@ def alamat(update, context):
     # Get a cursor
     cur = db.cursor()
     
-    insert_query = "INSERT INTO user (nama, gender, usia, alamat) VALUES (%s, %s, %s, %s)"
+    insert_query = "INSERT INTO user (nama, gender, usia, aims, alamat) VALUES (%s, %s, %s,%s, %s)"
 
     # Execute a query
-    cur.execute(insert_query, (nama_user, gender_user, usia_user, alamat_user))
+    cur.execute(insert_query, (nama_user, gender_user, usia_user, aims_user, alamat_user))
     
     db.commit()
     # Close connection
@@ -168,7 +158,7 @@ def alamat(update, context):
     
     # Send message with text and appended InlineKeyboard
     update.message.reply_text(
-        "Terima kasih, data anda sudah terisi. selanjutnya kami akan melakukan assesment\n\nApakah Anda pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
+        "Terima kasih, data anda sudah terisi. selanjutnya kami akan melakukan assesment.\n\nApakah Anda pernah kontak dengan pasien positif COVID-19 (berada dalam satu ruangan yang sama/kontak dalam jarak 1 meter) ATAU pernah berkunjung ke negara/daerah Endemis COVID-19 dalam 14 hari terakhir",
         reply_markup=reply_markup
     )
     # Tell ConversationHandler that we're in state `FIRST` now
@@ -358,6 +348,8 @@ def main():
             GENDER: [MessageHandler(Filters.text, gender)],
             
             USIA: [MessageHandler(Filters.text, usia)],
+            
+            AIMS: [MessageHandler(Filters.text, aims)],
             
             ALAMAT: [MessageHandler(Filters.text, alamat)],
             

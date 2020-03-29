@@ -104,7 +104,8 @@ def alamat(update, context):
 
     reply_keyboard = [['Lanjut']]
     
-    update.message.reply_text("Terima kasih, data anda sudah terisi. selanjutnya kami akan melakukan assesment, Klik Lanjut.".format(nama_user),  reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+    update.message.reply_text("Terima kasih, data anda sudah terisi. selanjutnya kami akan melakukan assesment, Klik Lanjut.")
+                              #,  reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
        
     return KONFIRM
 

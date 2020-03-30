@@ -40,7 +40,10 @@ def db_write(user, kondisi):
     cur.close()
     db.close()
 
-def start(update, context):    
+def start(update, context):  
+    user = update.message.from_user
+    db_write(user, "start")
+    
     update.message.reply_text("Halo, saat ini Anda berbicara dengan *CleanTheCovid-19 Bot*. dibuat oleh *Komunitas CleanTheCity dan di support oleh beberapa dokter dari AMMA. Powered by MKA Indonesia*.\n\n*#CleanTheCovid19*\n\nBerikut layanan yang dapat anda akses, tekan tombol dibawah ini :\n\n/start - Perkenalan bot\n/deteksi - Konsul dokter & Test Mandiri COVID-19\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia\n/cegah - Mencegah COVID-19", parse_mode=ParseMode.MARKDOWN)
     
 def deteksi_(update, context):
@@ -328,6 +331,9 @@ def error(update, context):
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 def info(update, context):
+    
+    user = update.message.from_user
+    db_write(user, "info")
 
     r = requests.get('https://api.kawalcorona.com/indonesia/')
     
@@ -351,6 +357,9 @@ def info(update, context):
                               \n\nSumber: https://kawalcorona.com/".format(confirmed, recovered, deaths, confirmed_w, recovered_w, deaths_w ), parse_mode=ParseMode.MARKDOWN),
 
 def cegah(update, context):
+    user = update.message.from_user
+    db_write(user, "cegah")
+    
     bot = context.bot
     bot.send_photo(chat_id=update.message.chat_id, photo=open('img/cucitangan.jpeg', 'rb'))
      

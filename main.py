@@ -400,7 +400,7 @@ def five(update, context):
               \n- gejala mirip masuk angin \
               \n- sakit tenggorokan ringan \
               \n- sedikit sakit (tidak demam, tidak lelah, masih makan dan minum secara normal) \
-              \n\nAnda perlu pemeriksaan lanjut atau berkonsultasi via chatting dengan relawan dokter kami : [dr. Fatimah Rahmat](https://t.me/Fatimah_Rahmat) agar Anda tetap dalam pengawasan dokter.\n\nKlik disini untuk konsultasi dengan dokter Fatimah : [@Fatimah_Rahmat](https://t.me/Fatimah_Rahmat)",
+              \n\n*Anda perlu pemeriksaan lanjutan ke RS rujukan COVID-19 atau ulangi pemeriksaan untuk bantuan konsultasi dengan relawan dokter kami*",
         reply_markup=reply_markup,
         parse_mode=ParseMode.MARKDOWN
     )

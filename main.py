@@ -4,6 +4,7 @@ import logging
 import config
 import mysql.connector
 import requests
+import re
 
 import json
 
@@ -14,7 +15,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 # Stages
-NAMA, GENDER, USIA, AIMS, ALAMAT, FIRST, SECOND, THIRD = range(8) #
+NAMA, REINPUT_NAMA, GENDER, USIA, AIMS, CABANG, FIRST, SECOND, THIRD = range(9) #
 
 # Callback data
 ONE, TWO, THREE, FOUR, FIVE, SIX = range(6)
@@ -29,6 +30,47 @@ class User:
         self.aims = None
         self.cabang = None
 
+def db_load():
+    db = mysql.connector.connect(
+        host=config.host,
+        port=3306,
+        database='ctcovid19',
+        user=config.user,
+        password=config.passwd)
+    
+    cur = db.cursor()
+    
+    insert_query = "SELECT * FROM user_diagnosis WHERE id IN (SELECT MAX(id) FROM user_diagnosis GROUP BY id_telegram)"
+    
+    # Execute a query
+    cur.execute(insert_query)
+    
+    records = cur.fetchall()
+    
+    for row in records:
+        chat_id = int(row[2])
+        
+        print("loaded chat_id {}".format(chat_id))
+        
+        nama = row[5]
+        aims = row[6]
+        gender = row[7]
+        usia = row[8]
+        cabang = row[9]
+        
+        user = User(nama)
+        user_dict[chat_id] = user
+        
+        user_data = user_dict[chat_id]
+        user_data.usia = usia
+        user_data.aims = aims
+        user_data.gender = gender
+        user_data.cabang = cabang
+    
+    db.commit()
+    cur.close()
+    db.close()
+    
 def db_write(user, kondisi):
         # Connect to server
     db = mysql.connector.connect(
@@ -89,7 +131,7 @@ def deteksi(update, context):
     
         # Send message with text and appended InlineKeyboard
         update.message.reply_text(
-            "Halo {},\nBerikut adalah data anda \
+            "Halo {},\nBerikut adalah data Anda \
             \n\nUsia : {} \
             \nJenis kelamin : {} \
             \nNo AIMS : {} \
@@ -152,20 +194,36 @@ def deteksi_over(update, context):
     )
     return FIRST
 
+# def reinput_nama(update, context):
+#     query = update.callback_query
+#     bot = context.bot
+    
+#     bot.send_message(
+#         chat_id=query.message.chat_id,
+#         #message_id=query.message.message_id,
+#         text = "Nama yang anda ketikkan salah. Mohon input ulang lagi.\n\nSiapa *nama* Anda ?",
+#         parse_mode=ParseMode.MARKDOWN
+#     )
+    
+#     return GENDER
+
 def nama(update, context):
     nama_user = update.message.text
     
-    chat_id = update.message.chat.id
-    user = User(nama_user)
-    user_dict[chat_id] = user
-    
-    #print(update)
-    
-    reply_keyboard = [['Laki-laki', 'Perempuan']]
-    
-    update.message.reply_text("Apakah anda Laki-laki atau Perempuan?", reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))  
+    if re.match(r"([A-Za-z])+( [A-Za-z]+)", nama_user) or nama_user.isalpha(): #not nama_user.isalpha():
+        chat_id = update.message.chat.id
+        user = User(nama_user)
+        user_dict[chat_id] = user
+        
+        reply_keyboard = [['Laki-laki', 'Perempuan']]
+        
+        update.message.reply_text("Apakah anda Laki-laki atau Perempuan?", reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))  
 
-    return GENDER
+        return GENDER
+    else:
+        update.message.reply_text("Nama harus semuanya huruf. Mohon input ulang lagi.\n\nSiapa *nama* Anda ?", parse_mode=ParseMode.MARKDOWN)
+        return NAMA
+    
 
 def gender(update, context):
     gender_user = update.message.text
@@ -181,6 +239,19 @@ def gender(update, context):
 def usia(update, context):
     usia_user = update.message.text
     
+    if '/' in usia_user:
+        update.message.reply_text("Usia yang anda ketikkan salah. Mohon input ulang lagi.\n\nBerapa *usia* Anda (tahun) ?", parse_mode=ParseMode.MARKDOWN)
+        return USIA
+    elif not usia_user.isnumeric():
+        update.message.reply_text("Usia harus semuanya angka (dalam tahun). Mohon input ulang lagi.\n\nBerapa *usia* Anda (tahun) ?", parse_mode=ParseMode.MARKDOWN)
+        return USIA
+    elif len(usia_user) > 2:
+        update.message.reply_text("Tidak mungkin!! Anda terlalu tua. Mohon input ulang lagi.\n\nBerapa *usia* Anda (tahun) ?", parse_mode=ParseMode.MARKDOWN)
+        return USIA
+    elif usia_user == '0':
+        update.message.reply_text("Tidak mungkin!! Anda terlalu muda. Mohon input ulang lagi.\n\nBerapa *usia* Anda (tahun) ?", parse_mode=ParseMode.MARKDOWN)
+        return USIA
+    
     chat_id = update.message.chat.id
     user = user_dict[chat_id]
     user.usia = usia_user
@@ -192,52 +263,63 @@ def usia(update, context):
 def aims(update, context):
     aims_user = update.message.text
     
+    if '/' in aims_user:
+        update.message.reply_text("Nomor AIMS yang anda ketikkan salah. Mohon input ulang lagi.\n\nBerapa *nomor AIMS* Anda ?", parse_mode=ParseMode.MARKDOWN)
+        return AIMS
+    elif not aims_user.isnumeric():
+        update.message.reply_text("Nomor AIMS harus semuanya angka. Mohon input ulang lagi.\n\nBerapa *nomor AIMS* Anda ?", parse_mode=ParseMode.MARKDOWN)
+        return AIMS
+    elif len(aims_user) != 5:
+        update.message.reply_text("Nomor AIMS harus 5 angka. Mohon input ulang lagi.\n\nBerapa *nomor AIMS* Anda ?", parse_mode=ParseMode.MARKDOWN)
+        return AIMS
+    
     chat_id = update.message.chat.id
     user = user_dict[chat_id]
     user.aims = aims_user
     
     update.message.reply_text("Dari mana asal *Cabang* Anda ?", parse_mode=ParseMode.MARKDOWN)  
     
-    return ALAMAT
+    return CABANG
 
-# def alamat(update, context):
-#     global alamat_user
-#     alamat_user = update.message.text
-#     reply_keyboard = [['Lanjut']]
-#     update.message.reply_text("Terima kasih, data anda sudah terisi. selanjutnya kami akan melakukan assesment. Klik Lanjut.", reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))  
-
-#     return KONFIRM
-
-def alamat(update, context):
+def cabang(update, context):
     cabang_user = update.message.text
     
-    chat_id = update.message.chat.id
-    user = user_dict[chat_id]
-    user.cabang = cabang_user
+    if re.match(r"([A-Za-z])+( [A-Za-z]+)", cabang_user) or cabang_user.isalpha(): #not nama_user.isalpha():
+        chat_id = update.message.chat.id
+        user = user_dict[chat_id]
+        user.cabang = cabang_user
+        
+        user_tele = update.message.from_user
+        logger.info("Captured data : %s %s %s %s %s %s %s %s", user_tele.id, user_tele.username, user_tele.first_name, user.nama, user.gender, user.usia, user.aims, user.cabang)
+        
+
+        keyboard = [
+            [InlineKeyboardButton("Ya", callback_data=str(ONE)),
+            InlineKeyboardButton("Tidak", callback_data=str(FOUR))]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        # Send message with text and appended InlineKeyboard
+        update.message.reply_text(
+            "Halo {},\nApakah dalam 3 hari terakhir Anda merasakan : \
+            \n- gejala mirip masuk angin \
+            \n- sakit tenggorokan ringan \
+            \n- sedikit sakit (tidak demam, tidak lelah, masih makan dan minum secara normal) \
+            \n\n*Tekan tombol dibawah ini :*".format(user.nama),
+            reply_markup=reply_markup,
+            parse_mode=ParseMode.MARKDOWN
+        )
+        # Tell ConversationHandler that we're in state `FIRST` now
+        return FIRST
+    elif not cabang_user.isalpha():
+        update.message.reply_text("Cabang harus semuanya huruf. Mohon input ulang lagi.\n\nDari mana asal *Cabang* Anda ?", parse_mode=ParseMode.MARKDOWN)
+        return CABANG
+    else:
+        update.message.reply_text("Cabang yang anda ketikkan salah. Mohon input ulang lagi.\n\nDari mana asal *Cabang* Anda ?", parse_mode=ParseMode.MARKDOWN)
+        return CABANG
+        
     
-    user_tele = update.message.from_user
-    logger.info("Captured data : %s %s %s %s %s %s %s %s", user_tele.id, user_tele.username, user_tele.first_name, user.nama, user.gender, user.usia, user.aims, user.cabang)
-    
-    #logger.info("Captured data : %s %s %s", user.id, user.username, user.first_name)
-    
-    keyboard = [
-        [InlineKeyboardButton("Ya", callback_data=str(ONE)),
-         InlineKeyboardButton("Tidak", callback_data=str(FOUR))]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    # Send message with text and appended InlineKeyboard
-    update.message.reply_text(
-        "Halo {},\nApakah dalam 3 hari terakhir Anda merasakan : \
-        \n- gejala mirip masuk angin \
-        \n- sakit tenggorokan ringan \
-        \n- sedikit sakit (tidak demam, tidak lelah, masih makan dan minum secara normal) \
-        \n\n*Tekan tombol dibawah ini :*".format(user.nama),
-        reply_markup=reply_markup,
-        parse_mode=ParseMode.MARKDOWN
-    )
-    # Tell ConversationHandler that we're in state `FIRST` now
-    return FIRST
+
 
 # Kalo Ya
 def one(update, context):
@@ -474,14 +556,14 @@ def main():
         entry_points=[CommandHandler('deteksi', deteksi)],
         states={
             NAMA: [MessageHandler(Filters.text, nama)],
-            
+                   
             GENDER: [MessageHandler(Filters.text, gender)],
             
             USIA: [MessageHandler(Filters.text, usia)],
             
             AIMS: [MessageHandler(Filters.text, aims)],
             
-            ALAMAT: [MessageHandler(Filters.text, alamat)],
+            CABANG: [MessageHandler(Filters.text, cabang)],
             
             FIRST: [CallbackQueryHandler(one, pattern='^' + str(ONE) + '$'),
                     CallbackQueryHandler(two, pattern='^' + str(TWO) + '$'),
@@ -518,4 +600,6 @@ def main():
     updater.idle()
 
 if __name__ == '__main__':
+    db_load()
+    
     main()

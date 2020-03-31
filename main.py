@@ -112,6 +112,8 @@ def db_write_diagnosis(user_tele, user, kondisi):
 def start(update, context):  
     user = update.message.from_user
     
+    logger.info("User %s started the conversation.", user.first_name)
+    
     db_write(user, "start")
     
     update.message.reply_text("Halo, saat ini Anda berbicara dengan *CleanTheCovid-19 Bot*. dibuat oleh *Komunitas CleanTheCity dan di support oleh beberapa dokter dari AMMA. Powered by MKA Indonesia*.\n\n*#CleanTheCovid19*\n\nBerikut layanan yang dapat anda akses, tekan tombol dibawah ini :\n\n/start - Perkenalan bot\n/deteksi - Konsul dokter & Test Mandiri COVID-19\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia\n/cegah - Mencegah COVID-19", parse_mode=ParseMode.MARKDOWN)
@@ -120,6 +122,8 @@ def deteksi(update, context):
     """Send message on `/start`."""
     # Get user that sent /start and log his name
     user = update.message.from_user
+    
+    db_write(user, "deteksi")
     
     if user.id in user_dict:
         chat_id = user.id
@@ -143,7 +147,6 @@ def deteksi(update, context):
         # Tell ConversationHandler that we're in state `FIRST` now
         return THIRD
     else:
-        logger.info("User %s started the conversation.", user.first_name)
         update.message.reply_text("Silakan isi data diri terlebih dahulu.\n\nSiapa *nama* Anda ?", parse_mode=ParseMode.MARKDOWN)     
         return NAMA
 
@@ -207,10 +210,16 @@ def deteksi_over(update, context):
     
 #     return GENDER
 
+def check_alphabet_with_space(str_input):
+    for w in str_input.split(' '):
+        if not w.isalpha():
+            return False
+    return True
+            
 def nama(update, context):
     nama_user = update.message.text
     
-    if re.match(r"([A-Za-z])+( [A-Za-z]+)", nama_user) or nama_user.isalpha(): #not nama_user.isalpha():
+    if check_alphabet_with_space(nama_user): #not nama_user.isalpha():
         chat_id = update.message.chat.id
         user = User(nama_user)
         user_dict[chat_id] = user
@@ -284,7 +293,8 @@ def aims(update, context):
 def cabang(update, context):
     cabang_user = update.message.text
     
-    if re.match(r"([A-Za-z])+( [A-Za-z]+)", cabang_user) or cabang_user.isalpha(): #not nama_user.isalpha():
+    #if re.match(r"([A-Za-z])+( [A-Za-z]+)", cabang_user) or cabang_user.isalpha(): #not nama_user.isalpha():
+    if check_alphabet_with_space(cabang_user):
         chat_id = update.message.chat.id
         user = user_dict[chat_id]
         user.cabang = cabang_user

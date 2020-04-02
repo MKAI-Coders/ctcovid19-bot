@@ -601,6 +601,10 @@ def cegah(update, context):
     )
     
     bot.send_message(chat_id=update.message.chat_id,
+        text="Prosedur Disinfektan #CleanTheCovid19\n\nhttps://drive.google.com/file/d/1dPrc-RMCiLih-Sq0whDijvXyFq6Q6GFN/view"
+    )
+    
+    bot.send_message(chat_id=update.message.chat_id,
         text="Cara Mencuci Tangan #CleanTheCovid19"
     )
     

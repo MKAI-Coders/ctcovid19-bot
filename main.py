@@ -8,6 +8,8 @@ import re
 
 import json
 
+import Levenshtein
+
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -47,10 +49,10 @@ def db_load():
     
     records = cur.fetchall()
     
-    for row in records:
+    for i, row in enumerate(records):
         chat_id = int(row[2])
         
-        print("loaded chat_id {}".format(chat_id))
+        print("loaded {} chat_id {}".format(i + 1, chat_id))
         
         nama = row[5]
         aims = row[6]
@@ -116,7 +118,11 @@ def start(update, context):
     
     db_write(user, "start")
     
-    update.message.reply_text("Halo, saat ini Anda berbicara dengan *CleanTheCovid-19 Bot*. dibuat oleh *Komunitas CleanTheCity dan di support oleh beberapa dokter dari AMMA. Powered by MKA Indonesia*.\n\n*#CleanTheCovid19*\n\nBerikut layanan yang dapat anda akses, tekan tombol dibawah ini :\n\n/start - Perkenalan bot\n/deteksi - Konsul dokter & Test Mandiri COVID-19\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia\n/cegah - Mencegah COVID-19", parse_mode=ParseMode.MARKDOWN)
+    update.message.reply_text("Halo, saat ini Anda berbicara dengan *CleanTheCovid-19 Bot*. dibuat oleh *Komunitas CleanTheCity dan di support oleh beberapa dokter dari AMMA. Powered by MKA Indonesia*.\n\n*#CleanTheCovid19*\n\nBerikut layanan yang dapat anda akses, klik link berwarna biru dibawah ini : \
+                              \n\n/start - Perkenalan bot \
+                              \n\n/deteksi - Konsul dokter & Test Mandiri COVID-19 \
+                              \n\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia \
+                              \n\n/cegah - Mencegah COVID-19", parse_mode=ParseMode.MARKDOWN)
     
 def deteksi(update, context):
     """Send message on `/start`."""
@@ -464,6 +470,46 @@ def six(update, context):
     # Transfer to conversation state `SECOND`
     return SECOND
 
+def echo(update, context):
+    """Echo the user message."""
+    
+    user = update.message.from_user
+    nama = user.first_name
+    reply = update.message.text
+    reply = reply.lower()
+    
+    txt = reply.split(' ')
+    for txt_word in txt:
+        
+        if Levenshtein.ratio(txt_word, "assalamualaikum") > 0.7 or Levenshtein.ratio(txt_word, "assalam") > 0.8 or txt_word in ['ass', 'asw']: 
+            update.message.reply_text("Wa'alaikumsalam, salam kenal {}".format(nama))
+            break
+        elif Levenshtein.ratio(txt_word, "hallo") > 0.7 or txt_word in ['hi', 'halo', 'hello', 'helo']: 
+            update.message.reply_text("Halo, salam kenal {}".format(nama))
+            break
+        elif Levenshtein.ratio(txt_word, "kabar") > 0.7 or Levenshtein.ratio(txt_word, "kabarnya") > 0.7:
+            update.message.reply_text("Saya baik, kalau kamu bagaimana {}?".format(nama))
+            break
+        elif Levenshtein.ratio(txt_word, "baik") > 0.8 or Levenshtein.ratio(txt_word, "sehat") > 0.7 or Levenshtein.ratio(txt_word, "alhamdulillah") > 0.8:
+            update.message.reply_text("Alhamdulillah. Saya senang mendengarnya. Semoga {} sehat selalu yah".format(nama))
+            break       
+        elif Levenshtein.ratio(txt_word, "kurang") > 0.8 or Levenshtein.ratio(txt_word, "buruk") > 0.8:
+            update.message.reply_text("Oh begitu ya.. tetep semangat yah {}, kamu pasti bisa lebih baik hari ini".format(nama))
+            break
+        elif Levenshtein.ratio(txt_word, "makasih") > 0.85 or Levenshtein.ratio(txt_word, "terima") > 0.85 or Levenshtein.ratio(txt_word, "kasih") > 0.85 or Levenshtein.ratio(txt_word, "thank") > 0.8:
+            update.message.reply_text("Sama-sama")
+            
+            bot = context.bot
+    
+            bot.send_message(chat_id=update.message.chat_id,
+                text="Oiyaa.. ini layanan yang dapat anda akses, klik link berwarna biru dibawah ini : \
+                              \n\n/start - Perkenalan bot \
+                              \n\n/deteksi - Konsul dokter & Test Mandiri COVID-19 \
+                              \n\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia \
+                              \n\n/cegah - Mencegah COVID-19"
+            )
+            break
+
 def five(update, context):
     """Show new choice of buttons"""
     query = update.callback_query
@@ -509,7 +555,7 @@ def end(update, context):
     #update.message.from_user  'username': 'spdin', 'first_name': 'Saripudin'
     bot.send_message(
         chat_id=query.message.chat_id,
-        text="Semoga {} dan keluarga selalu sehat dan terlindung dari wabah COVID-19. Aamiin\n\nSilakan untuk mengakses menu lainnya:\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia\n/cegah - Mencegah COVID-19".format(user_name)
+        text="Semoga {} dan keluarga selalu sehat dan terlindung dari wabah COVID-19. Aamiin\n\nSilakan untuk mengakses layanan lainnya:\n\n/start - Perkenalan bot\n\n/info - Kabar terkini COVID-19 di Indonesia dan Dunia\n\n/cegah - Mencegah COVID-19".format(user_name)
     )
     
     return ConversationHandler.END
@@ -549,7 +595,17 @@ def cegah(update, context):
     db_write(user, "cegah")
     
     bot = context.bot
-    bot.send_photo(chat_id=update.message.chat_id, photo=open('img/cucitangan.jpeg', 'rb'))
+    
+    bot.send_message(chat_id=update.message.chat_id,
+        text="https://youtu.be/nygj8y3doiA"
+    )
+    
+    bot.send_message(chat_id=update.message.chat_id,
+        text="Cara Mencuci Tangan #CleanTheCovid19"
+    )
+    
+    bot.send_photo(chat_id=update.message.chat_id, photo=open('img/cucitangan.jpeg', 'rb'))  
+    
      
 def about(update, context):
     update.message.reply_text("Bot untuk mengecek kesehatan dan konsultasi dokter dari gejala infeksi virus COVID-19. Sesuai dengan petunjuk Kemenkes. Powered by AMMA. Support By MKAI.\n\n/start - Deteksi gejala infeksi COVID-19\n/info - Kabar terkini COVID-19 di Indonesia\n/help - Cara mencuci tangan")
@@ -597,6 +653,8 @@ def main():
     dp.add_handler(CommandHandler("deteksi", deteksi))
     dp.add_handler(CommandHandler("info", info))
     dp.add_handler(CommandHandler("cegah", cegah))
+    
+    dp.add_handler(MessageHandler(Filters.text, echo))
 
     # log all errors
     dp.add_error_handler(error)

@@ -598,9 +598,16 @@ def cegah(update, context):
     db_write(user, "cegah")
     
     bot = context.bot
+    bot.send_message(chat_id=update.message.chat_id,
+        text="https://www.youtube.com/watch?v=tFjYZcAF3Y0"
+    )
     
     bot.send_message(chat_id=update.message.chat_id,
-        text="https://youtu.be/nygj8y3doiA"
+        text="https://www.youtube.com/watch?v=ZCFFcwTEg90"
+    )
+    
+    bot.send_message(chat_id=update.message.chat_id,
+        text="https://www.youtube.com/watch?v=nygj8y3doiA"
     )
     
     bot.send_message(chat_id=update.message.chat_id,

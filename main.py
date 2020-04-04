@@ -569,7 +569,10 @@ def info(update, context):
     user = update.message.from_user
     db_write(user, "info")
 
-    r = requests.get('https://api.kawalcorona.com/indonesia/')
+    r = requests.get('https://api.kawalcorona.com/indonesia/') #https://httpstat.us/503'
+    if r.status_code >= 500:
+        update.message.reply_text("Mohon maaf website untuk pengambilan data sedang bermasalah, mohon bisa dicoba lagi pada waktu selanjutnya ya.\n\nTerima kasih", parse_mode=ParseMode.MARKDOWN)
+        return
     
     confirmed = r.json()[0]['positif']
     recovered = r.json()[0]['sembuh']
